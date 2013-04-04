@@ -31,10 +31,10 @@ line  : NL
       ;
 
 exp   : NUM           { $$ = $1 }
-      | exp exp PLUS  { $$ = $1 + $2; }
-      | exp exp MINUS { $$ = $1 + $2; }
-      | exp exp MULT  { $$ = $1 * $2; }
-      | exp exp DIV   { $$ = $1 / $2; }
+      | exp PLUS  exp { $$ = $1 + $3; }
+      | exp MINUS exp { $$ = $1 + $3; }
+      | exp MULT  exp { $$ = $1 * $3; }
+      | exp DIV   exp { $$ = $1 / $3; }
       ;
 
 %%
