@@ -1,23 +1,10 @@
-build_dir = ./generated
+.PHONY: Build Lexer Parser
 
-program_name = calc
-flex_name    = calc
-bison_name   = calc
+Build: Parser Lexer
+	g++ -o compiler lexer.cpp parser.cpp driver.cpp compiler.cpp
 
-flex_file  = $(flex_name).l
-bison_file = $(bison_name).y
+Lexer: lexer.l
+	flex -o lexer.cpp lexer.l 
 
-flex_output  = $(build_dir)/$(flex_name)_lexer.cpp
-bison_output = $(build_dir)/$(bison_name)_parser.cpp
-bison_xml    = $(build_dir)/$(bison_name)_parser.xml
-
-build: calc.l calc.y
-	$(if $(wildcard $(build_dir)),,mkdir $(build_dir))
-	flex  -o $(flex_output)  $(flex_file)
-	bison -o $(bison_output) $(bison_file) 
-	g++ $(flex_output) $(bison_output) -o $(program_name) 
-	
-calc.html: calc.y
-	bison -x -o $(bison_output) $(bison_file)
-	xsltproc /usr/share/bison/xslt/xml2xhtml.xsl $(bison_xml) > calc.html
-
+Parser: parser.y
+	bison -d -o parser.cpp parser.y
