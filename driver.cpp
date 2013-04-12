@@ -1,28 +1,40 @@
-#include <iostream>
-#include "Driver.hpp"
+#include "driver.hpp"
 
-Driver::Driver() :
-    trace_scanning(false),
-    trace_parsing(false)
+int Driver::parse(FILE * code_file)
 {
-}
+    yyin = code_file;
+    yy_flex_debug = trace_scanning;
 
-Driver::~Driver()
-{
-}
-
-int Driver::parse(const std::string& filename_)
-{
-    filename = filename_;
-    scan_begin();
     yy::Parser parser(*this);
     parser.set_debug_level(trace_parsing);
-    int res = parser.parse();
-    scan_end();
-    return res;
+
+    return parser.parse();
 }
 
-void Driver::error(const std::string& m)
+
+std::string Driver::getAstString() 
 {
-    std::cerr << m << std::endl;
+    std::ostringstream stream;
+    stream << "(" << std::endl;
+
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        stream << (*it)->toString() << std::endl;
+    }
+
+    stream << ")" <<std::endl;
+    return stream.str();
 }
+
+
+void Driver::deleteAst() 
+{
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        delete *it;
+    }
+}
+
+void Driver::error(const std::string& mess)
+{
+    fprintf(stderr, "%s\n", mess.c_str());
+}
+

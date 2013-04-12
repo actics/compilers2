@@ -1,10 +1,13 @@
 .PHONY: Build Lexer Parser
 
 Build: Parser Lexer
-	g++ -o compiler lexer.cpp parser.cpp driver.cpp compiler.cpp
+	g++ -std=c++11 -o compiler ./generated/lexer.cpp ./generated/parser.cpp driver.cpp node.cpp compiler.cpp
 
-Lexer: lexer.l
-	flex -o lexer.cpp lexer.l 
+Lexer: GenDir lexer.l
+	flex -o ./generated/lexer.cpp lexer.l 
 
-Parser: parser.y
-	bison -d -o parser.cpp parser.y
+Parser: GenDir parser.y
+	bison -d -o ./generated/parser.cpp parser.y
+
+GenDir:
+	$(if $(wildcard ./generated),,mkdir ./generated)

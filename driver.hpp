@@ -1,9 +1,12 @@
-#ifndef DRIVER_H
-#define DRIVER_H
+#pragma once
 
+#include <cstdio>
+#include <iostream>
 #include <string>
-#include <map>
-#include "parser.hpp"
+#include <vector>
+
+#include "./generated/parser.hpp"
+#include "node.hpp"
 
 #define YY_DECL                                 \
     yy::Parser::token_type                      \
@@ -11,23 +14,20 @@
            Driver& driver)
 YY_DECL;
 
+extern FILE * yyin;
+extern int yy_flex_debug;
+
 class Driver
 {
 public:
-    Driver();
-    virtual ~Driver();
+    bool trace_scanning = false;
+    bool trace_parsing  = false;
 
-    std::map<std::string, double> variables;
-    double result;
+    std::vector<Node*> nodes;
 
-    void scan_begin();
-    void scan_end();
-    bool trace_scanning;
-
-    int parse(const std::string& filename);
-    std::string filename;
-    bool trace_parsing;
-
+    int parse(FILE *);
+    std::string getAstString();
+    void deleteAst();
     void error(const std::string& m);
 };
-#endif
+

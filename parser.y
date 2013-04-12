@@ -4,8 +4,9 @@
 %define parser_class_name "Parser"
 
 %code requires {
-#include <string>
-class Driver;
+    #include <string>
+    class Driver;
+    class Node;
 }
 
 %parse-param { Driver& driver }
@@ -14,13 +15,15 @@ class Driver;
 %debug
 %error-verbose
 
+%code {
+    #include "../driver.hpp"
+    #include "../node.hpp"
+}
+
 %union {
     double dval;
     std::string* sval;
-}
-
-%code {
-#include "driver.hpp"
+    Node * nval;
 }
 
 %token END 0 "end of file"
@@ -35,30 +38,53 @@ class Driver;
 %token DEF
 %token EXTERN
 %token <sval> IDENTIFIER "identifier"
-%token <dval> NUMBER "number"
-%type <dval> expr
+%token <dval> NUMBER     "number"
+
+%type  <nval> expr
+
+%start unit
+
 
 %%
-%start unit;
-unit    : assignments expr  { driver.result = $2; };
 
-assignments : assignments assignment {}
-            | /* Nothing.  */        {};
 
-assignment  : IDENTIFIER EQUALS expr
-            { driver.variables[*$1] = $3; delete $1; };
+unit
+    : assignments expr  { driver.nodes.push_back($2); }
+    ;
+
+assignments 
+    : assignments assignment {}
+    | /* Nothing.  */        {}
+    ;
+
+assignment
+    : IDENTIFIER EQUALS expr 
+    { 
+        Node* varnode = new VarNode(*$1);
+        Node* binnode = new BinNode(varnode, $3, "=");
+        driver.nodes.push_back(binnode); 
+        delete $1; 
+    }
+    ;
 
 %left PLUS MINUS;
 %left TIMES SLASH;
-expr    : expr PLUS expr    { $$ = $1 + $3; }
-        | expr MINUS expr   { $$ = $1 - $3; }
-        | expr TIMES expr   { $$ = $1 * $3; }
-        | expr SLASH expr   { $$ = $1 / $3; }
-        | IDENTIFIER  { $$ = driver.variables[*$1]; delete $1; }
-        | NUMBER      { $$ = $1; };
+
+expr 
+    : expr PLUS  expr   { $$ = new BinNode($1, $3, "+"); }
+    | expr MINUS expr   { $$ = new BinNode($1, $3, "-"); }
+    | expr TIMES expr   { $$ = new BinNode($1, $3, "*"); }
+    | expr SLASH expr   { $$ = new BinNode($1, $3, "/"); }
+    | IDENTIFIER        { $$ = new VarNode(*$1); delete $1; }
+    | NUMBER            { $$ = new NumNode($1); }
+    ;
+
+
 %%
+
 
 void yy::Parser::error(const yy::location& l, const std::string& m)
 {
     driver.error(m);
 }
+

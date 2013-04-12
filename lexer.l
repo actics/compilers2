@@ -1,7 +1,6 @@
 %{
-#include <iostream>
 #include "parser.hpp"
-#include "driver.hpp"
+#include "../driver.hpp"
 
 typedef yy::Parser::token token;
 
@@ -42,19 +41,4 @@ nl    [\r\n]
 
 %%
 
-void Driver::scan_begin()
-{
-    yy_flex_debug = trace_scanning;
-    if (filename == "-")
-        yyin = stdin;
-    else if (!(yyin = fopen (filename.c_str (), "r")))
-    {
-        error(std::string ("cannot open ") + filename);
-        exit(1);
-    }
-}
 
-void Driver::scan_end()
-{
-    fclose(yyin);
-}
