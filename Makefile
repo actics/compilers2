@@ -15,7 +15,7 @@ build: calc.l calc.y
 	$(if $(wildcard $(build_dir)),,mkdir $(build_dir))
 	flex  -o $(flex_output)  $(flex_file)
 	bison -o $(bison_output) $(bison_file) 
-	g++ $(flex_output) $(bison_output) -o $(program_name) 
+	g++ -std=c++11 $(flex_output) $(bison_output) -o $(program_name) 
 	
 calc.html: calc.y
 	bison -x -o $(bison_output) $(bison_file)

@@ -25,7 +25,7 @@ nl    [\r\n]
 "write" return KEYW_WRITE;
 {nl}    return NL; 
 {digit}*\.?{digit}+ {
-                       yylval.dval = std::atof(yytext);
+                       yylval.sval = new std::string(yytext);
                        return NUM;
                     }
 {char}{nchar}*      {
