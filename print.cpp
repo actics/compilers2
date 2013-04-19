@@ -2,5 +2,6 @@
 
 void print(double x) 
 {
-    printf("%lf\n");
+    printf("%lf\n", x);
 }
+
