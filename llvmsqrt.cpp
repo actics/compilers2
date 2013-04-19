@@ -106,7 +106,7 @@ Function * createSqrtFunction(IRBuilder<> & builder, Module* module, Function * 
 
 Function *createMainFunction(IRBuilder<> & builder, Module* module, Function * sqrt_func, Function * print_func)
 {
-    FunctionType *main_type = FunctionType::get(Type::getDoubleTy(getGlobalContext()), false);
+    FunctionType *main_type = FunctionType::get(Type::getInt32Ty(getGlobalContext()), false);
     Function     *main_func = Function::Create(main_type, Function::ExternalLinkage, "main", module);
     
     BasicBlock* entry_bb   = BasicBlock::Create(getGlobalContext(), "", main_func);
@@ -121,7 +121,8 @@ Function *createMainFunction(IRBuilder<> & builder, Module* module, Function * s
     params.push_back(_2_sqrt);
     builder.CreateCall(print_func, params);
 
-    builder.CreateRet(_2_const);
+    Value * ret_const  = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 0, false);
+    builder.CreateRet(ret_const);
 
     verifyFunction(*main_func);
 
