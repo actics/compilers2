@@ -1,5 +1,6 @@
 generated/*
-calc
+llvmsqrt
+llvmsqrt_b
 
 *~
 *.swp
@@ -13,4 +14,6 @@ calc
 *.com
 *.exe
 *.html
+*.bc
+*.s
 
