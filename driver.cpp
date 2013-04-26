@@ -4,7 +4,8 @@ int Driver::parse(FILE * code_file)
 {
     yyin = code_file;
     yy_flex_debug = trace_scanning;
-
+    IRBuilder<> builder = IRBuilder<>(getGlobalContext());
+    CodeGeneratorBase::setBuilder(&builder);
     yy::Parser parser(*this);
     parser.set_debug_level(trace_parsing);
 

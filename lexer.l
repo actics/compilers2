@@ -20,20 +20,31 @@ nl    [\r\n]
 
 "+"                 return token::PLUS;     
 "-"                 return token::MINUS;    
-"*"                 return token::TIMES;    
-"/"                 return token::SLASH;    
-"("                 return token::LPAREN;   
-")"                 return token::RPAREN;   
-"="                 return token::EQUALS;
+"*"                 return token::MULTIPLICATION;    
+"/"                 return token::DIVISION;
+"("                 return token::LEFT_PARENTHESIS;   
+")"                 return token::RIGTH_PARENTHESIS;   
+"{"                 return token::LEFT_CURLY_BRACE;   
+"}"                 return token::RIGTH_CURLY_BRACE;
+"="                 return token::ASSIGN;
 ";"                 return token::SEMICOLON;
-"def"               return token::DEF;
-"extern"            return token::EXTERN;
+">"                 return token::GT;
+"<"                 return token::LS;
+">="                return token::GTE;
+"<="                return token::LSE;
+"=="                return token::EQ;
+"!="                return token::NEQ;
+"return"            return token::RETURN;
+"if"                return token::IF;
+"else"              return token::ELSE;
+"create"            return token::CREATE_FUNCTION;
+","                 return token::COMMA;
 {char}{nchar}*      {
-                        yylval->sval = new std::string(yytext);
+                        yylval->string_value = new std::string(yytext);
                         return token::IDENTIFIER;
                     }
 {digit}*\.?{digit}+ {
-                        yylval->dval = std::atof(yytext);
+                        yylval->double_value = std::atof(yytext);
                         return token::NUMBER;
                     }
 ({nl}|{ws})+        /* ignore */
