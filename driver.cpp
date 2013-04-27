@@ -15,23 +15,41 @@ int Driver::parse(FILE * code_file)
 
 std::string Driver::getAstString() 
 {
-    std::ostringstream stream;
-    stream << "(" << std::endl;
+    return node->toString();
+}
 
-    for (auto it = nodes.begin(); it != nodes.end(); it++) {
-        stream << (*it)->toString() << std::endl;
-    }
 
-    stream << ")" <<std::endl;
-    return stream.str();
+Module* Driver::codeGeneration()
+{
+    IRBuilder<> builder(getGlobalContext());
+    Module* module = new Module("module.1", getGlobalContext());
+
+    CodeGeneratorBase::setModule(module);
+    CodeGeneratorBase::setBuilder(&builder);
+    
+    FunctionType *main_type = FunctionType::get(Type::getInt32Ty(getGlobalContext()), false);
+    Function     *main_func = Function::Create(main_type, Function::ExternalLinkage, "main", module);
+    Value * ret_const  = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 0, false);
+    
+    BasicBlock* entry_bb   = BasicBlock::Create(getGlobalContext(), "", main_func);
+
+    builder.SetInsertPoint(entry_bb);
+
+    BasicBlock *block = node->codeGeneration();
+    builder.CreateRet(ret_const);
+
+    builder.SetInsertPoint(entry_bb);
+    builder.CreateBr(block);
+
+    verifyFunction(*main_func);
+
+    return module;
 }
 
 
 void Driver::deleteAst() 
 {
-    for (auto it = nodes.begin(); it != nodes.end(); it++) {
-        delete *it;
-    }
+    delete node;
 }
 
 void Driver::error(const std::string& mess)

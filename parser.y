@@ -67,7 +67,7 @@
 %type <value_node> action
 %type <value_node> function_call
 %type <value_node> if_expression
-%type <function_node> create_function
+%type <value_node> create_function
 %type <value_node> variable_definition
 %type <value_node> return_statement
 %type <block_node> else_expression
@@ -81,7 +81,7 @@
 
 
 axiom
-    : block { driver.nodes.push_back($1); }
+    : block { driver.node = $1; }
     ;
 
 block
@@ -96,7 +96,7 @@ actions
 action
     : function_call
     | if_expression
-/*    | create_function */
+    | create_function 
     | variable_definition
     | return_statement
     ;
@@ -139,16 +139,16 @@ create_function
 
 definition_arguments_eps
     : definition_arguments { $$ = $1; }
-    | /* epsilon */ { $$ = new DefinitionArgumentsNode(); }
+    | /* epsilon */ { $$ = new FunctionArgumentsNode(); }
     ;
 
 definition_arguments
-    : definition_arguments COMMA IDENTIFIER { $1->append($3); $$ = $1; }
-    | IDENTIFIER { $$ = new DefinitionArgumentsNode($1); }
+    : definition_arguments COMMA IDENTIFIER { $1->append(new VariableNode(*$3)); $$ = $1; }
+    | IDENTIFIER { $$ = new FunctionArgumentsNode(); $$->append(new VariableNode(*$1)); }
     ;
 
 variable_definition
-    : IDENTIFIER ASSIGN expression { $$ = new VariableDefinitionNode(*$1, $3); }
+    : IDENTIFIER ASSIGN expression { $$ = new BinaryNode("=", new VariableNode(*$1), $3); }
     ;
 
 return_statement
@@ -160,10 +160,10 @@ return_statement
 
 expression
     : LEFT_PARENTHESIS expression RIGTH_PARENTHESIS { $$ = $2; }
-    | expression PLUS expression { $$ = new BinaryNode("", $1, $3); }
-    | expression MINUS expression { $$ = new BinaryNode("", $1, $3); }
-    | expression MULTIPLICATION expression { $$ = new BinaryNode("", $1, $3); }
-    | expression DIVISION expression { $$ = new BinaryNode("", $1, $3); }
+    | expression PLUS expression { $$ = new BinaryNode("+", $1, $3); }
+    | expression MINUS expression { $$ = new BinaryNode("-", $1, $3); }
+    | expression MULTIPLICATION expression { $$ = new BinaryNode("*", $1, $3); }
+    | expression DIVISION expression { $$ = new BinaryNode("/", $1, $3); }
     | function_call { $$ = $1; }
     | IDENTIFIER { $$ = new VariableNode(*$1); }
     | NUMBER { $$ = new NumberNode($1); }

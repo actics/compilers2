@@ -1,5 +1,12 @@
 #pragma once
 
+#include <cstdio>
+#include <cstdlib>
+
+#include <string>
+#include <vector>
+#include <map>
+
 #include <llvm/LLVMContext.h>
 #include <llvm/Module.h>
 #include <llvm/IRBuilder.h>
@@ -7,9 +14,22 @@
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
 
-#include "codeScope.hpp"
-
 using namespace llvm;
+
+template <typename LlvmValue>
+class CodeScope {
+private:
+    std::vector<std::map<std::string, LlvmValue> > scope;
+
+public:
+    ~CodeScope() {}
+
+    void pushScope();
+    void popScope();
+    LlvmValue getObject(std::string name);
+    void addObject(std::string name, LlvmValue object);
+};
+
 
 class CodeGeneratorBase {
 public:
@@ -25,6 +45,11 @@ public:
 
     static void setModule(Module *mod) {
         module = mod;
+    }
+
+    static void error(std::string msg) {
+        fprintf(stderr, "%s\n", msg.c_str());
+        exit(1);
     }
 };
 

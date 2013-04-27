@@ -57,7 +57,10 @@ int main(int argc, char** argv)
     }
 
     if (!driver.parse(code_file)) {
-        printf("%s\n", driver.getAstString().c_str());
+        // printf("%s\n", driver.getAstString().c_str());
+        Module* module = driver.codeGeneration();
+        verifyModule(*module);
+        module->dump();
         driver.deleteAst();
     }
 

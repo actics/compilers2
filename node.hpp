@@ -6,9 +6,60 @@
 #include <map>
 #include <cstdio>
 
-#include "llvmInterface.hpp"
-#include "collectionNode.hpp"
-#include "binaryNode.hpp"
+#include "codeGenerator.hpp"
+
+class Node {
+public:
+    virtual ~Node() {}
+
+    virtual std::string toString() = 0;
+};
+
+
+class ValueNode: public Node, public CodeGenerator<Value*> {
+public:
+    virtual ~ValueNode() {}
+
+    virtual std::string toString() = 0;
+    virtual Value* codeGeneration() = 0;
+};
+
+
+class ValueNodeCollection: public Node {
+protected:
+    std::vector<ValueNode*> collection;
+
+public:
+    virtual  ~ValueNodeCollection() {}
+    ValueNodeCollection() {}
+
+    void append(ValueNode *element)
+    {
+        collection.push_back(element);
+    }
+
+    std::string toString();
+};
+
+
+class FunctionArgumentsNode: public ValueNodeCollection, public CodeGenerator<std::vector<Type*> > {
+public:
+    void createArgumentScope(Function *func);
+    std::vector<Type*> codeGeneration();
+};
+
+
+class FunctionParametrsNode: public ValueNodeCollection, public CodeGenerator<std::vector<Value*> > {
+public:
+    std::vector<Value*> codeGeneration();
+};
+
+
+class BlockNode: public ValueNodeCollection, public CodeGenerator<BasicBlock*> {
+public:
+    BasicBlock* codeGeneration();
+};
+
 
 class VariableNode: public ValueNode {
 private:
@@ -17,8 +68,6 @@ private:
 public:
     ~VariableNode() {}
     VariableNode(std::string name) : varname(name) {}
-
-    std::string getName();
 
     std::string toString();
     Value* codeGeneration();
@@ -30,6 +79,7 @@ private:
     double number;
 
 public:
+    ~NumberNode() {}
     NumberNode(double number) : number(number) {};
 
     std::string toString();
@@ -37,16 +87,33 @@ public:
 };
 
 
-
 class VariableDefinitionNode: public ValueNode {
 private:
-    std::string variable;
+    std::string varname;
     ValueNode *expression;
 
 public:
-    ~VariableDefinitionNode(); 
-    VariableDefinitionNode(std::string var, ValueNode *expr) : variable(var), expression(expr) {}
-    
+    ~VariableDefinitionNode() { delete expression; }
+
+    std::string toString();
+    Value* codeGeneration();
+};
+
+
+class BinaryNode: public ValueNode {
+private:
+    std::string operation;
+    ValueNode *left_node;
+    ValueNode *rigth_node;
+
+public:
+    ~BinaryNode() { delete left_node, rigth_node; }
+    BinaryNode(std::string oper, ValueNode* lnode, ValueNode* rnode) 
+        : operation(oper)
+        , left_node(lnode)
+        , rigth_node(rnode) 
+    {}
+
     std::string toString();
     Value* codeGeneration();
 };
@@ -58,7 +125,7 @@ private:
     FunctionParametrsNode *parametrs;
 
 public:
-    ~FunctionCallNode();
+    ~FunctionCallNode() { delete parametrs; }
     FunctionCallNode(std::string fname, FunctionParametrsNode *params): function_name(fname), parametrs(params) {}
 
     std::string toString();
@@ -66,14 +133,14 @@ public:
 };
 
 
-class CreateFunctionNode: public FunctionNode {
+class CreateFunctionNode: public ValueNode {
 private:
     std::string function_name;
     FunctionArgumentsNode *arguments;
     BlockNode *block;
 
 public:
-    ~CreateFunctionNode();
+    ~CreateFunctionNode() { delete arguments, block; }
     CreateFunctionNode(std::string fname, FunctionArgumentsNode *args, BlockNode *block) 
         : function_name(fname)
         , arguments(args)
@@ -81,7 +148,7 @@ public:
     {}
 
     std::string toString();
-    Function* codeGeneration();
+    Value* codeGeneration();
 };
 
 
@@ -92,7 +159,7 @@ private:
     BlockNode *false_block;
 
 public:
-    ~IfNode();
+    ~IfNode() { delete expression, true_block, false_block; }
     IfNode(ValueNode *expr, BlockNode *tblock, BlockNode *fblock)
         : expression(expr)
         , true_block(tblock)
@@ -109,7 +176,7 @@ private:
     ValueNode *expression;
 
 public:
-    ~ReturnNode();
+    ~ReturnNode() { delete expression; }
     ReturnNode(ValueNode *val): expression(val) {}
 
     std::string toString();

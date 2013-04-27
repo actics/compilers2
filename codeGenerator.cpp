@@ -1,4 +1,4 @@
-#include "codeScope.hpp"
+#include "codeGenerator.hpp"
 
 template <typename LlvmValue>
 void CodeScope<LlvmValue>::pushScope()
@@ -35,4 +35,14 @@ LlvmValue CodeScope<LlvmValue>::getObject(std::string name)
     }
     return NULL;
 }
+
+
+template class CodeScope<Value*>;
+template class CodeScope<Function*>;
+
+
+IRBuilder<>          *CodeGeneratorBase::builder = 0;
+Module               *CodeGeneratorBase::module  = 0;
+CodeScope<Value*>    CodeGeneratorBase::variable_scope;
+CodeScope<Function*> CodeGeneratorBase::function_scope;
 

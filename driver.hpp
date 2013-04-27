@@ -23,7 +23,8 @@ public:
     bool trace_scanning = false;
     bool trace_parsing  = false;
 
-    std::vector<Node*> nodes;
+    BlockNode *node;
+    Module* codeGeneration();
 
     int parse(FILE *);
     std::string getAstString();
